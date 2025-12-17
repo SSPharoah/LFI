@@ -2,42 +2,33 @@
 
 **Leica Fotografie International Image Converter**
 
-## Why This Exists
+---
 
-I shoot with a Leica. I wanted to submit photos to [LFI](https://lfi-online.de/) (Leica Fotografie International), the official Leica magazine and gallery. I kept getting rejected.
+Hello.
 
-Not because the photos were bad. Because of *technical requirements*.
+I'm Eric Bigelow, a software engineer from Florida.
 
-LFI has strict submission guidelines:
-- **Format:** JPG only
-- **Maximum file size:** 15 MB
-- **Minimum file size:** exists (I forget the exact number, but it's not a concern for Leica shooters)
-- Various other constraints around dimensions and quality
+I'm usually paid for my work, but this one didn't feel the same as commercial. It's really simple. I went from non-existent to finished product, uploading to GitHub in 12 minutes flat. My fastest work. I'm not in competition with you, and I can make things that aren't this… mono-purposed, but this app does what I need it to do, and it does it quickly and gracefully, and serves no other purpose.
 
-My workflow produces large RAW files. I export to TIFF or high-quality JPG. The files are too big. I compress. Now they're too small, or the quality is visibly degraded. I resize. Now the aspect ratio is wrong, or the dimensions trigger some other rule. Back and forth. Rejected. Rejected. Rejected.
+All this app does is take an image file, then applies sorcery to ensure it still looks its best while simultaneously also removing any disqualifying elements that would render it ineligible for submission to the LFI Mastershot Selection process, or the LFI Challenge submissions process. If you are ever selected, they'll contact you in attempt to get your original or post-edit RAW file anyway. These are the "thumbnails". If LFI ever asks you, specifically, to send them an image—please do not run it through this app.
 
-This app eliminates the guesswork.
+I honestly got physically tired, having to shift gears from Lightroom, final tweaks, color grading, and all the intensely creative adjustments you need to make while in hard-art mode, only to have to switch to the dumb handles of making a JPG "fit" inside someone's idea of acceptable parameters. This app is an overly simple file converter, but I see it as a singularly purposed shield that prevents you from needing to leave creative mode to pay attention to dumb things, therefore possibly losing your flow. Having "The Hot Hand" is rare enough as it is these days. At least it is for me.
 
-**Drop any image. Get a JPG that LFI will accept.**
+If you don't own a Leica, this app is almost certainly useless to you.
 
-That's it. That's the entire purpose. One input, one output, zero rejections.
+If you DO own a Leica, first of all congratulations! I hope it serves you, and all the future generations who use it, equally well.
 
-## What It Does
+Will you be using your Leica to submit photos to the LFI Mastershot or LFI Challenge programs?
 
-1. Accepts any image format (RAW, TIFF, PNG, HEIC, JPG, whatever)
-2. Converts to JPG
-3. Starts at highest possible quality (95%)
-4. If file exceeds 15 MB, reduces quality incrementally (down to 70% minimum)
-5. If still too large at 70% quality, reduces resolution by 10% and tries again
-6. Outputs the highest quality JPG under 15 MB that it can produce
+If not, this app is almost certainly useless to you, too.
 
-The algorithm prioritizes quality over resolution. A slightly smaller image at high quality looks better than a full-resolution image with compression artifacts. This matters for Leica glass.
+If you plan to submit photos to either of these programs, and the photos were taken with any Leica camera, this app might actually be useful to you. If that's you, this is my formal wish that it serves you well throughout your journey with Leica photography. It's not like any other, and it deserves its own tool, no matter how simple.
 
-## Design Philosophy
+Thanks for your time.
 
-The interface is deliberately minimal. Dark charcoal background. Cream-colored text. A single red dot—the only color—because if you know, you know.
+**Eric Bigelow**
 
-This app could have been made by Leica. It wasn't. But it could have been.
+---
 
 ## Installation
 
@@ -46,65 +37,36 @@ This app could have been made by Leica. It wasn't. But it could have been.
 Requires macOS 14.0+ and Xcode 15+.
 
 ```bash
-git clone https://github.com/yourusername/LFI.git
+git clone https://github.com/SSPharoah/LFI.git
 cd LFI
 open LFI.xcodeproj
 # Press Cmd+R to build and run
 ```
 
-### Pre-built Release
-
-Check the [Releases](https://github.com/yourusername/LFI/releases) page for a signed `.app` bundle.
-
 ## Usage
 
 1. Launch the app
-2. Drag an image onto the window (or click to select from Finder)
-3. Wait for processing (usually 1-3 seconds)
+2. Drag an image onto the window (or click to select)
+3. Wait for processing
 4. Click **Save**
 5. Submit to LFI
 
-## Customizing the Font
+## How It Works
 
-The app uses the system font (SF Pro) by default. If you want a more Leica-appropriate typeface:
-
-1. Download a font:
-   - [Inter](https://rsms.me/inter/) — clean, geometric (OFL license)
-   - [IBM Plex Sans](https://github.com/IBM/plex) — German industrial aesthetic (OFL license)
-   - [Source Sans Pro](https://github.com/adobe-fonts/source-sans) — neutral, professional (OFL license)
-
-2. Add the `.ttf` or `.otf` files to the Xcode project
-
-3. Add to `Info.plist`:
-   ```xml
-   <key>ATSApplicationFontsPath</key>
-   <string>Fonts</string>
-   ```
-
-4. Edit `ContentView.swift` line 16:
-   ```swift
-   private let CUSTOM_FONT_NAME: String? = "Inter"  // or your font's PostScript name
-   ```
-
-## Technical Details
-
-- **Language:** Swift / SwiftUI
-- **Platform:** macOS 14.0+
-- **Dependencies:** None (uses native frameworks only)
-- **Image processing:** `NSBitmapImageRep` with Lanczos resampling
+1. Accepts any image format (RAW, TIFF, PNG, HEIC, JPG, etc.)
+2. Converts to JPG at 95% quality
+3. If over 15MB, reduces quality incrementally (minimum 70%)
+4. If still over 15MB at 70%, scales resolution down 10% and repeats
+5. Outputs the highest quality JPG under 15MB possible
 
 ## License
 
-**CC0 1.0 Universal (Public Domain)**
+**MIT License** — Copyright (c) 2025 Agency Instruments
 
-This software is released into the public domain. You can copy, modify, distribute, and use it for any purpose, commercial or non-commercial, without asking permission and without attribution.
+Free to use, modify, and distribute. Just keep the copyright notice.
 
-See [LICENSE](LICENSE) for the full legal text.
+See [LICENSE](LICENSE) for the full text.
 
 ## Disclaimer
 
-This app is not affiliated with, endorsed by, or connected to Leica Camera AG or LFI Magazine. "Leica" and "LFI" are trademarks of Leica Camera AG. This is an independent utility created by a frustrated photographer who wanted to submit photos without fighting file format requirements.
-
----
-
-*For Leica shooters, by a Leica shooter.*
+This app is not affiliated with, endorsed by, or connected to Leica Camera AG or LFI Magazine. "Leica" and "LFI" are trademarks of Leica Camera AG.

@@ -13,7 +13,7 @@ import UniformTypeIdentifiers
 // - "SourceSansPro" (https://github.com/adobe-fonts/source-sans) - neutral
 //
 // Set to nil to use system font (SF Pro)
-private let CUSTOM_FONT_NAME: String? = nil
+private let CUSTOM_FONT_NAME: String? = "Inter"
 
 // MARK: - Design System
 
