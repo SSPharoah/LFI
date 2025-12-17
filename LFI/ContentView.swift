@@ -1,6 +1,67 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+// MARK: - Typography (EASILY REPLACEABLE)
+// To use a custom font:
+// 1. Add your .ttf or .otf file to the project
+// 2. Add it to Info.plist under "Fonts provided by application"
+// 3. Change this constant to your font's PostScript name
+//
+// Suggested Leica-like fonts (free, redistributable):
+// - "Inter" (https://rsms.me/inter/) - clean, geometric
+// - "IBMPlexSans" (https://github.com/IBM/plex) - German industrial
+// - "SourceSansPro" (https://github.com/adobe-fonts/source-sans) - neutral
+//
+// Set to nil to use system font (SF Pro)
+private let CUSTOM_FONT_NAME: String? = nil
+
+// MARK: - Design System
+
+private enum LFIColors {
+    static let background = Color(red: 0.08, green: 0.08, blue: 0.08)
+    static let surface = Color(red: 0.11, green: 0.11, blue: 0.11)
+    static let surfaceHover = Color(red: 0.14, green: 0.12, blue: 0.12)
+
+    // Cream/off-white: white with warmth
+    static let textPrimary = Color(red: 0.96, green: 0.94, blue: 0.88)
+    static let textSecondary = Color(red: 0.60, green: 0.58, blue: 0.54)
+    static let textTertiary = Color(red: 0.40, green: 0.38, blue: 0.36)
+
+    // Leica red - used sparingly
+    static let accent = Color(red: 0.87, green: 0.12, blue: 0.15)
+    static let accentSubtle = Color(red: 0.87, green: 0.12, blue: 0.15).opacity(0.8)
+}
+
+private enum LFITypography {
+    static func font(size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        if let fontName = CUSTOM_FONT_NAME {
+            // Map weight to font variant naming convention
+            let weightSuffix: String
+            switch weight {
+            case .ultraLight: weightSuffix = "-UltraLight"
+            case .thin: weightSuffix = "-Thin"
+            case .light: weightSuffix = "-Light"
+            case .regular: weightSuffix = "-Regular"
+            case .medium: weightSuffix = "-Medium"
+            case .semibold: weightSuffix = "-SemiBold"
+            case .bold: weightSuffix = "-Bold"
+            case .heavy: weightSuffix = "-Heavy"
+            case .black: weightSuffix = "-Black"
+            default: weightSuffix = "-Regular"
+            }
+
+            // Try weight-specific variant first, fall back to base font
+            if let _ = NSFont(name: fontName + weightSuffix, size: size) {
+                return .custom(fontName + weightSuffix, size: size)
+            }
+            return .custom(fontName, size: size)
+        }
+        return .system(size: size, weight: weight, design: .default)
+    }
+}
+
+// MARK: - Main View
+
 struct ContentView: View {
     @State private var isDragging = false
     @State private var isProcessing = false
@@ -11,123 +72,133 @@ struct ContentView: View {
     @State private var processedData: Data?
     @State private var outputFilename = "output_LFI.jpg"
 
-    private let maxSize = 15 * 1024 * 1024 // 15MB
+    private let maxSize = 15 * 1024 * 1024
     private let minQuality: CGFloat = 0.70
     private let startQuality: CGFloat = 0.95
     private let scaleStep: CGFloat = 0.90
 
     var body: some View {
         VStack(spacing: 0) {
+            Spacer().frame(height: 40)
+
             // Header
-            VStack(spacing: 4) {
+            VStack(spacing: 6) {
                 Text("LFI")
-                    .font(.system(size: 36, weight: .light))
-                    .tracking(8)
-                    .foregroundColor(.white)
-                Text("Leica Fotografie International")
-                    .font(.system(size: 11, weight: .regular))
-                    .tracking(2)
-                    .foregroundColor(.gray)
+                    .font(LFITypography.font(size: 32, weight: .light))
+                    .tracking(12)
+                    .foregroundColor(LFIColors.textPrimary)
+
+                Text("LEICA FOTOGRAFIE INTERNATIONAL")
+                    .font(LFITypography.font(size: 9, weight: .medium))
+                    .tracking(3)
+                    .foregroundColor(LFIColors.textTertiary)
             }
-            .padding(.top, 30)
-            .padding(.bottom, 25)
+
+            Spacer().frame(height: 36)
 
             // Drop Zone
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 2)
                     .strokeBorder(
-                        isDragging ? Color.red.opacity(0.8) : Color.gray.opacity(0.3),
-                        style: StrokeStyle(lineWidth: 2, dash: [8])
+                        isDragging ? LFIColors.accent : LFIColors.textTertiary.opacity(0.3),
+                        lineWidth: 1
                     )
                     .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(isDragging ? Color.red.opacity(0.05) : Color.white.opacity(0.02))
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(isDragging ? LFIColors.surfaceHover : LFIColors.surface)
                     )
 
                 if isProcessing {
                     ProgressView()
-                        .scaleEffect(1.5)
-                        .progressViewStyle(CircularProgressViewStyle(tint: .gray))
+                        .scaleEffect(0.8)
+                        .progressViewStyle(CircularProgressViewStyle(tint: LFIColors.textSecondary))
                 } else {
-                    VStack(spacing: 8) {
-                        Image(systemName: "photo.on.rectangle.angled")
-                            .font(.system(size: 40, weight: .thin))
-                            .foregroundColor(.gray.opacity(0.6))
-                        Text("Drop image here")
-                            .font(.system(size: 14))
-                            .foregroundColor(.gray.opacity(0.8))
-                        Text("or click to select")
-                            .font(.system(size: 11))
-                            .foregroundColor(.gray.opacity(0.5))
+                    VStack(spacing: 12) {
+                        // Minimal icon - just a rectangle suggesting an image
+                        RoundedRectangle(cornerRadius: 1)
+                            .stroke(LFIColors.textTertiary.opacity(0.4), lineWidth: 1)
+                            .frame(width: 32, height: 24)
+
+                        Text("Drop image")
+                            .font(LFITypography.font(size: 13, weight: .regular))
+                            .foregroundColor(LFIColors.textSecondary)
                     }
                 }
             }
-            .frame(height: 180)
-            .padding(.horizontal, 30)
+            .frame(height: 160)
+            .padding(.horizontal, 40)
             .onDrop(of: [.image, .fileURL], isTargeted: $isDragging) { providers in
                 handleDrop(providers: providers)
                 return true
             }
-            .onTapGesture {
-                selectFile()
-            }
+            .onTapGesture { selectFile() }
+
+            Spacer().frame(height: 28)
 
             // Status
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 if !statusMessage.isEmpty {
                     Text(statusMessage)
-                        .font(.system(size: 13))
-                        .foregroundColor(statusMessage.contains("Ready") ? .green.opacity(0.8) : .orange.opacity(0.8))
+                        .font(LFITypography.font(size: 11, weight: .regular))
+                        .foregroundColor(statusMessage.contains("Ready") ? LFIColors.textPrimary : LFIColors.textSecondary)
                 }
 
                 if !originalInfo.isEmpty {
                     VStack(spacing: 4) {
                         Text(originalInfo)
-                            .font(.system(size: 11, design: .monospaced))
-                            .foregroundColor(.gray.opacity(0.7))
+                            .font(LFITypography.font(size: 10, weight: .regular))
+                            .foregroundColor(LFIColors.textTertiary)
                         Text(outputInfo)
-                            .font(.system(size: 11, design: .monospaced))
-                            .foregroundColor(.gray.opacity(0.9))
+                            .font(LFITypography.font(size: 10, weight: .regular))
+                            .foregroundColor(LFIColors.textSecondary)
                     }
                 }
             }
-            .frame(height: 80)
-            .padding(.top, 20)
+            .frame(height: 60)
 
             // Preview
             if let image = processedImage {
                 Image(nsImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxHeight: 200)
-                    .cornerRadius(8)
-                    .padding(.horizontal, 30)
+                    .frame(maxHeight: 180)
+                    .padding(.horizontal, 40)
             }
 
             Spacer()
 
-            // Download Button
+            // Save Button - the only splash of red
             if processedData != nil {
                 Button(action: saveFile) {
-                    Text("Save JPG")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white)
-                        .frame(width: 160, height: 44)
-                        .background(Color.red.opacity(0.8))
-                        .cornerRadius(8)
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(LFIColors.accent)
+                            .frame(width: 6, height: 6)
+                        Text("Save")
+                            .font(LFITypography.font(size: 12, weight: .medium))
+                            .tracking(1)
+                            .foregroundColor(LFIColors.textPrimary)
+                    }
+                    .frame(width: 100, height: 36)
+                    .background(LFIColors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 2)
+                            .stroke(LFIColors.textTertiary.opacity(0.2), lineWidth: 1)
+                    )
                 }
                 .buttonStyle(.plain)
                 .padding(.bottom, 30)
             }
 
             // Footer
-            Text("Target: JPG under 15MB")
-                .font(.system(size: 10))
-                .foregroundColor(.gray.opacity(0.4))
+            Text("15 MB")
+                .font(LFITypography.font(size: 9, weight: .regular))
+                .tracking(2)
+                .foregroundColor(LFIColors.textTertiary.opacity(0.5))
                 .padding(.bottom, 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(white: 0.1))
+        .background(LFIColors.background)
     }
 
     private func selectFile() {
@@ -146,17 +217,13 @@ struct ContentView: View {
         if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
             provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
                 if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
-                    DispatchQueue.main.async {
-                        processImage(url: url)
-                    }
+                    DispatchQueue.main.async { processImage(url: url) }
                 }
             }
         } else if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
             provider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil) { item, _ in
                 if let url = item as? URL {
-                    DispatchQueue.main.async {
-                        processImage(url: url)
-                    }
+                    DispatchQueue.main.async { processImage(url: url) }
                 }
             }
         }
@@ -164,12 +231,12 @@ struct ContentView: View {
 
     private func processImage(url: URL) {
         guard let image = NSImage(contentsOf: url) else {
-            statusMessage = "Failed to load image"
+            statusMessage = "Failed to load"
             return
         }
 
         isProcessing = true
-        statusMessage = "Processing..."
+        statusMessage = "Processing"
         processedImage = nil
         processedData = nil
 
@@ -178,14 +245,14 @@ struct ContentView: View {
         outputFilename = "\(filename)_LFI.jpg"
 
         guard let originalRep = image.representations.first else {
-            statusMessage = "Failed to read image"
+            statusMessage = "Failed"
             isProcessing = false
             return
         }
         let originalWidth = originalRep.pixelsWide
         let originalHeight = originalRep.pixelsHigh
 
-        originalInfo = "Original: \(formatSize(originalSize)) (\(originalWidth) x \(originalHeight))"
+        originalInfo = "Input: \(formatSize(originalSize)) · \(originalWidth)×\(originalHeight)"
 
         DispatchQueue.global(qos: .userInitiated).async {
             let result = findOptimalOutput(image: image, originalWidth: originalWidth, originalHeight: originalHeight)
@@ -196,10 +263,10 @@ struct ContentView: View {
                 if let data = result.data {
                     processedData = data
                     processedImage = NSImage(data: data)
-                    statusMessage = "Ready to save"
-                    outputInfo = "Output: \(formatSize(data.count)) (\(result.width) x \(result.height)) Q:\(Int(result.quality * 100))%"
+                    statusMessage = "Ready"
+                    outputInfo = "Output: \(formatSize(data.count)) · \(result.width)×\(result.height) · Q\(Int(result.quality * 100))"
                 } else {
-                    statusMessage = "Processing failed"
+                    statusMessage = "Failed"
                 }
             }
         }
@@ -212,30 +279,25 @@ struct ContentView: View {
             let width = Int(CGFloat(originalWidth) * scale)
             let height = Int(CGFloat(originalHeight) * scale)
 
-            // Binary search for best quality at this scale
             var lo = minQuality
             var hi = startQuality
             var bestData: Data?
             var bestQuality = lo
 
-            // Check if max quality fits
             if let data = renderJPG(image: image, width: width, height: height, quality: hi), data.count <= maxSize {
                 return (data, width, height, hi)
             }
 
-            // Check if min quality fits
             if let data = renderJPG(image: image, width: width, height: height, quality: lo) {
                 if data.count <= maxSize {
                     bestData = data
                     bestQuality = lo
                 } else {
-                    // Even min quality too big at this scale, reduce scale
                     scale *= scaleStep
                     continue
                 }
             }
 
-            // Binary search
             for _ in 0..<10 {
                 let mid = (lo + hi) / 2
                 if let data = renderJPG(image: image, width: width, height: height, quality: mid) {
@@ -256,7 +318,6 @@ struct ContentView: View {
             scale *= scaleStep
         }
 
-        // Fallback
         let width = Int(CGFloat(originalWidth) * 0.1)
         let height = Int(CGFloat(originalHeight) * 0.1)
         let data = renderJPG(image: image, width: width, height: height, quality: minQuality)
