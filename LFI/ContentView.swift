@@ -100,7 +100,7 @@ struct ContentView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 2)
                     .strokeBorder(
-                        isDragging ? LFIColors.accent : LFIColors.textTertiary.opacity(0.3),
+                        isDragging ? LFIColors.accent : LFIColors.accent.opacity(0.4),
                         lineWidth: 1
                     )
                     .background(
@@ -325,22 +325,38 @@ struct ContentView: View {
     }
 
     private func renderJPG(image: NSImage, width: Int, height: Int, quality: CGFloat) -> Data? {
-        let newSize = NSSize(width: width, height: height)
-        let newImage = NSImage(size: newSize)
-
-        newImage.lockFocus()
-        NSGraphicsContext.current?.imageInterpolation = .high
-        image.draw(in: NSRect(origin: .zero, size: newSize),
-                   from: NSRect(origin: .zero, size: image.size),
-                   operation: .copy,
-                   fraction: 1.0)
-        newImage.unlockFocus()
-
-        guard let tiffData = newImage.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiffData) else {
+        // Get CGImage from source - handles all color spaces including Monochrom
+        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
             return nil
         }
 
+        // Create RGB bitmap context (JPEG output is always RGB)
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        guard let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+        ) else {
+            return nil
+        }
+
+        // High quality interpolation
+        context.interpolationQuality = .high
+
+        // Draw source image scaled to target size
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+        // Get the rendered image
+        guard let outputCGImage = context.makeImage() else {
+            return nil
+        }
+
+        // Convert to JPEG data
+        let bitmap = NSBitmapImageRep(cgImage: outputCGImage)
         return bitmap.representation(using: .jpeg, properties: [.compressionFactor: quality])
     }
 
